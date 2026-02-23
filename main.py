@@ -6,10 +6,7 @@ load_dotenv()
 
 
 def main():
-    topic = "best pet-friendly hotels in Southeast Asia"  # replace or make dynamic
-
-    crew = build_crew(topic)
-    result = crew.kickoff()
+    result = build_crew().kickoff()
 
     print("\n=== CREW RESULT ===")
     print(result)

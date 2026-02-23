@@ -56,4 +56,6 @@ Different agents may use different models or even different providers
 - Prefer editing existing files over creating new ones.
 
 ## Overall Rules
-Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+- Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+- Never touch the .env file, as you risk deleting info
+- All tests should be tested with a crewai Agent wherever possible to simulate realistic calling

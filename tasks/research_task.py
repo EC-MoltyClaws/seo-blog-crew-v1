@@ -1,13 +1,21 @@
 from crewai import Task
 
 
-def build_research_task(agent, topic):
+def build_research_task(agent, context_tasks):
     return Task(
         description=(
-            f"Research the following topic for a WanderPaws blog post: {topic}\n\n"
-            "Find key facts, useful tips, and any relevant statistics. "
-            "Summarise your findings in clear bullet points."
+            "Read the topic brief provided in context by the manager.\n\n"
+            "Using the topic, category, and target_audience from that brief, research the subject "
+            "thoroughly. Find at least 2 facts or statistics that can be cited in APA format "
+            "(Author, Year) and include the full source URL for each.\n\n"
+            "Tailor the depth and angle of your research to the specified target audience."
         ),
-        expected_output="A bullet-point summary of research findings ready for the writer.",
+        expected_output=(
+            "A research summary containing:\n"
+            "- The topic, category, and target audience (repeated from the brief)\n"
+            "- Key facts and insights in bullet points\n"
+            "- At least 2 APA-cited findings with full source URLs"
+        ),
         agent=agent,
+        context=context_tasks,
     )

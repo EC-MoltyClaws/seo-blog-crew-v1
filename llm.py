@@ -8,7 +8,7 @@ def get_default_llm(verbose: bool = True) -> LLM:
         raise ValueError("GEMINI_API_KEY is not set in .env")
 
     return LLM(
-        model="gemini/gemini-2.5-flash-lite",
+        model="gemini/gemini-2.5-flash",
         api_key=api_key,
         verbose=verbose,
     )
