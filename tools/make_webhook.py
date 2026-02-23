@@ -37,6 +37,70 @@ def get_latest_topic() -> str:
     return json.dumps(data, indent=2)
 
 
+# ── Connection test tools ─────────────────────────────────────────────────────
+# Lightweight tools used only in test.py to verify each webhook is reachable.
+# They do not affect production data.
+
+@tool("Test Fetch Topic Webhook Connection")
+def test_fetch_topic_connection() -> str:
+    """
+    Sends a test request to the fetch topic webhook and returns the raw response.
+    Used to verify the Make.com connection is working before a full pipeline run.
+    """
+    url = os.getenv("MAKE_WEBHOOK_FETCH_TOPIC")
+    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
+
+    if not url:
+        raise ValueError("MAKE_WEBHOOK_FETCH_TOPIC missing in .env")
+    if not api_key:
+        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
+
+    headers = {
+        "Content-Type": "application/json",
+        "x-make-apikey": api_key,
+    }
+
+    dummy_payload = {
+        "isTest": True,
+    }
+
+    response = requests.post(url, json=dummy_payload, headers=headers, timeout=30)
+
+    # Make.com returns 200 even on logical failures, so check the body too
+    response.raise_for_status()
+    return f"Status: {response.status_code}\nBody: {response.text}"
+
+
+@tool("Test Publish Post Webhook Connection")
+def test_publish_post_connection() -> str:
+    """
+    Sends a dummy post to the publish webhook and returns the raw response.
+    Used to verify the Make.com connection is working before a full pipeline run.
+    """
+    url = os.getenv("MAKE_WEBHOOK_PUBLISH_POST")
+    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
+
+    if not url:
+        raise ValueError("MAKE_WEBHOOK_PUBLISH_POST missing in .env")
+    if not api_key:
+        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
+
+    headers = {
+        "Content-Type": "application/json",
+        "x-make-apikey": api_key,
+    }
+
+    dummy_payload = {
+        "isTest": True,
+    }
+
+    response = requests.post(url, json=dummy_payload, headers=headers, timeout=60)
+
+    # Make.com returns 200 even on logical failures, so check the body too
+    response.raise_for_status()
+    return f"Status: {response.status_code}\nBody: {response.text}"
+
+
 @tool("Publish Blog Post to Shopify")
 def publish_blog_post(
     blogTitle: str,

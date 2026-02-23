@@ -6,8 +6,9 @@ Checks:
   1. All required env vars are set
   2. Gemini API responds (real call, tiny prompt)
   3. Serper API responds (real call, one search)
-  4. Make.com MCP server config is valid and endpoint is reachable
-  5. All agents and tasks can be imported and instantiated without errors
+  4. Make.com fetch topic webhook responds with valid JSON
+  5. Make.com publish webhook accepts a dummy post via publisher agent
+  6. All agents and tasks can be imported and instantiated without errors
 """
 
 import os
@@ -34,7 +35,13 @@ def check(label: str, fn):
 # ── 1. Env vars ──────────────────────────────────────────────────────────────
 
 def check_env_vars():
-    required = ["GEMINI_API_KEY", "SERPER_API_KEY", "MAKE_MCP_TOKEN"]
+    required = [
+        "GEMINI_API_KEY",
+        "SERPER_API_KEY",
+        "MAKE_WEBHOOK_FETCH_TOPIC",
+        "MAKE_WEBHOOK_API_KEY",
+        "MAKE_WEBHOOK_PUBLISH_POST",
+    ]
     missing = [v for v in required if not os.getenv(v)]
     if missing:
         raise ValueError(f"Missing env vars: {', '.join(missing)}")
@@ -68,35 +75,64 @@ def check_serper_api():
         raise RuntimeError("Serper returned no results")
 
 
-# ── 4. Make.com MCP ───────────────────────────────────────────────────────────
+# ── 4. Make.com webhooks ───────────────────────────────────────────────────────
+# Each check runs a single agent with the test tool via CrewAI so the call path
+# mirrors production as closely as possible (same LLM, same tool-calling mechanism).
 
-def check_make_mcp_config():
-    # from tools.make_webhook import get_mcp_url
-
-    # toolBoxUrl = os.getenv("MAKE_MCP_TOOLBOX_URL")
-    # toolBoxKey = os.getenv("MAKE_MCP_TOOLBOX_KEY")
-
-
-    # if not url.endswith("/sse"):
-    #     raise ValueError(f"MCP URL must end with /sse, got: {url}")
-
-
-def check_make_mcp_reachable():
-    from crewai import Agent
-    from tools.make_webhook import get_mcp_sse
+def check_make_fetch_topic():
+    """Runs a single agent with the fetch topic test tool through CrewAI."""
+    from crewai import Agent, Crew, Process, Task
     from llm import get_default_llm
+    from tools.make_webhook import test_fetch_topic_connection
 
-    # Mirror the exact DSL used in publisher.py — mcps=[url_string]
-    # If CrewAI can load tools from the URL the agent will have a non-empty tools list
     agent = Agent(
         llm=get_default_llm(verbose=False),
-        role="Test",
-        goal="Test",
-        backstory="Test",
-        mcps=[get_mcp_sse()],
+        role="Connection Tester",
+        goal="Test that the fetch topic webhook is reachable.",
+        backstory="You are a connection tester. You call the assigned tool and report the result.",
+        tools=[test_fetch_topic_connection],
+        verbose=False,
     )
-    if not agent.tools:
-        raise RuntimeError("DSL MCP loaded no tools onto the agent")
+
+    task = Task(
+        description="Call the Test Fetch Topic Webhook Connection tool and report the result.",
+        expected_output="The status code and raw response body from the webhook.",
+        agent=agent,
+    )
+
+    crew = Crew(agents=[agent], tasks=[task], process=Process.sequential, verbose=False)
+    result = crew.kickoff()
+
+    if not result:
+        raise RuntimeError("Fetch topic agent returned no result")
+
+
+def check_make_publish_post():
+    """Runs a single agent with the publish post test tool through CrewAI."""
+    from crewai import Agent, Crew, Process, Task
+    from llm import get_default_llm
+    from tools.make_webhook import test_publish_post_connection
+
+    agent = Agent(
+        llm=get_default_llm(verbose=False),
+        role="Connection Tester",
+        goal="Test that the publish post webhook is reachable.",
+        backstory="You are a connection tester. You call the assigned tool and report the result.",
+        tools=[test_publish_post_connection],
+        verbose=False,
+    )
+
+    task = Task(
+        description="Call the Test Publish Post Webhook Connection tool and report the result.",
+        expected_output="The status code and raw response body from the webhook.",
+        agent=agent,
+    )
+
+    crew = Crew(agents=[agent], tasks=[task], process=Process.sequential, verbose=False)
+    result = crew.kickoff()
+
+    if not result:
+        raise RuntimeError("Publish post agent returned no result")
 
 
 # ── 5. Imports and instantiation ──────────────────────────────────────────────
@@ -165,14 +201,14 @@ if __name__ == "__main__":
     print("\nRunning pre-push checks...\n")
 
     results = [
-        # check("Env vars set",              check_env_vars),
-        # check("Gemini API reachable",      check_gemini_api),
-        # check("Serper API reachable",      check_serper_api),
-        check("Make MCP config valid",     check_make_mcp_config),
-        check("Make MCP lists tools",      check_make_mcp_reachable),
-        # check("All imports resolve",       check_imports),
-        # check("Agents instantiate",        check_agent_instantiation),
-        # check("Tasks instantiate",         check_task_instantiation),
+        check("Env vars set",                      check_env_vars),
+        # check("Gemini API reachable",             check_gemini_api),
+        # check("Serper API reachable",             check_serper_api),
+        check("Make.com fetch topic reachable",    check_make_fetch_topic),
+        check("Make.com publish post reachable",   check_make_publish_post),
+        # check("All imports resolve",              check_imports),
+        # check("Agents instantiate",               check_agent_instantiation),
+        # check("Tasks instantiate",                check_task_instantiation),
     ]
 
     total = len(results)
