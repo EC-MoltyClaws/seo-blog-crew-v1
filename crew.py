@@ -27,8 +27,9 @@ def build_crew(topic: str) -> Crew:
     evaluate_task = build_evaluate_task(evaluator, context_tasks=[write_task, html_task])
 
     return Crew(
-        agents=[manager, researcher, writer, html_writer, evaluator],
+        agents=[researcher, writer, html_writer, evaluator],
         tasks=[research_task, write_task, html_task, evaluate_task],
-        process=Process.sequential,
+        manager_agent=manager,
+        process=Process.hierarchical,
         verbose=True,
     )

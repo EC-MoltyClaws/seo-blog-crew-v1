@@ -13,6 +13,7 @@ def build_manager_agent():
             "You delegate research, writing, and publishing tasks to the right agents "
             "and trigger Make.com workflows to publish the final post."
         ),
+        allow_delegation=True,
         mcps=[get_make_mcp_server()],
         verbose=True,
     )
