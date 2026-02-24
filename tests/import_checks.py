@@ -9,7 +9,7 @@ def check_imports():
     from tasks.research_task import build_research_task
     from tasks.write_task import build_write_task
     from tasks.html_task import build_html_task
-    from tasks.evaluate_task import build_evaluate_task
+    from tasks.evaluate_task import build_evaluate_writing_task
     from tasks.publish_task import build_publish_task
 
 
@@ -39,7 +39,7 @@ def check_task_instantiation():
     from tasks.research_task import build_research_task
     from tasks.write_task import build_write_task
     from tasks.html_task import build_html_task
-    from tasks.evaluate_task import build_evaluate_task
+    from tasks.evaluate_task import build_evaluate_writing_task
     from tasks.publish_task import build_publish_task
 
     publisher = build_publisher_agent()
@@ -51,6 +51,6 @@ def check_task_instantiation():
     fetch_topic_task = build_fetch_topic_task(publisher)
     research_task = build_research_task(researcher, context_tasks=[fetch_topic_task])
     write_task = build_write_task(writer, context_tasks=[fetch_topic_task, research_task])
-    html_task = build_html_task(html_writer, context_tasks=[fetch_topic_task, write_task])
-    evaluate_task = build_evaluate_task(evaluator, context_tasks=[write_task, html_task])
-    build_publish_task(publisher, context_tasks=[fetch_topic_task, html_task, evaluate_task])
+    evaluate_writing_task = build_evaluate_writing_task(evaluator, context_tasks=[fetch_topic_task, write_task])
+    html_task = build_html_task(html_writer, context_tasks=[fetch_topic_task, write_task, evaluate_writing_task])
+    build_publish_task(publisher, context_tasks=[fetch_topic_task, html_task, evaluate_writing_task])

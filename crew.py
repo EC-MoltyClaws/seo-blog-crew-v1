@@ -10,8 +10,8 @@ from agents.evaluator import build_evaluator_agent
 from tasks.fetch_topic_task import build_fetch_topic_task
 from tasks.research_task import build_research_task
 from tasks.write_task import build_write_task
+from tasks.evaluate_task import build_evaluate_writing_task
 from tasks.html_task import build_html_task
-from tasks.evaluate_task import build_evaluate_task
 from tasks.publish_task import build_publish_task
 
 
@@ -30,12 +30,15 @@ def build_crew(skip_research: bool = False) -> Crew:
 
     write_context = [t for t in [fetch_topic_task, research_task] if t is not None]
     write_task = build_write_task(writer, context_tasks=write_context)
-    html_task = build_html_task(html_writer, context_tasks=[fetch_topic_task, write_task])
-    evaluate_task = build_evaluate_task(evaluator, context_tasks=[write_task, html_task])
-    publish_task = build_publish_task(publisher, context_tasks=[fetch_topic_task, html_task, evaluate_task])
+
+    # Evaluate the writing before HTML conversion — only passes to HTML if score >= 48/60
+    evaluate_writing_task = build_evaluate_writing_task(evaluator, context_tasks=[fetch_topic_task, write_task])
+
+    html_task = build_html_task(html_writer, context_tasks=[fetch_topic_task, write_task, evaluate_writing_task])
+    publish_task = build_publish_task(publisher, context_tasks=[fetch_topic_task, html_task, evaluate_writing_task])
 
     all_agents = [a for a in [publisher, researcher, writer, html_writer, evaluator] if a is not None]
-    all_tasks = [t for t in [fetch_topic_task, research_task, write_task, html_task, evaluate_task, publish_task] if t is not None]
+    all_tasks = [t for t in [fetch_topic_task, research_task, write_task, evaluate_writing_task, html_task, publish_task] if t is not None]
 
     return Crew(
         agents=all_agents,

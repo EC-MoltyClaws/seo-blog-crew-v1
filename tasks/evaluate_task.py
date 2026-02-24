@@ -1,25 +1,48 @@
 from crewai import Task
 
 
-def build_evaluate_task(agent, context_tasks):
+def build_evaluate_writing_task(agent, context_tasks):
     return Task(
         description=(
-            "Review the HTML blog post and publishing fields from context against "
-            "the WanderPaws publishing checklist. Check every item below:\n\n"
-            "[ ] At least 2 APA in-text citations present in the body\n"
-            "[ ] References section has full APA 7th edition entries with URLs\n"
-            "[ ] FAQ contains exactly 5 questions (3 topic-related, 2 product-related)\n"
-            "[ ] Product promotion block uses data-slate markup with a 383x383 image\n"
-            "[ ] First product mention links to the UTM URL\n"
-            "[ ] Summary (meta description) is between 150 and 160 characters\n"
-            "[ ] Handle is lowercase letters and hyphens only\n"
-            "[ ] Tags is a non-empty comma-separated keyword string\n"
-            "[ ] HTML is well-formed with no unclosed tags\n\n"
-            "Return APPROVED if all checks pass. "
-            "Return REJECTED followed by a numbered list of every failed check if any item fails."
+            "Score the blog post draft from context against the three matrices below. "
+            "Each matrix is marked out of 20. A total of 48/60 or above is a PASS.\n\n"
+
+            "--- MATRIX 1: SEO Friendly (out of 20) ---\n"
+            "Award points based on how many of these are present and correct:\n"
+            "  - At least 2 APA in-text citations in the body (4 pts)\n"
+            "  - References section with full APA 7th edition entries and source URLs (3 pts)\n"
+            "  - FAQ contains exactly 5 questions (3 topic-related, 2 product-related) (4 pts)\n"
+            "  - Meta description is between 150 and 160 characters (3 pts)\n"
+            "  - URL handle is lowercase letters and hyphens only (2 pts)\n"
+            "  - Tags is a non-empty comma-separated keyword string (2 pts)\n"
+            "  - First product mention links to the UTM URL (2 pts)\n\n"
+
+            "--- MATRIX 2: Clear Answer Paragraph (out of 20) ---\n"
+            "Identify the main question the post is trying to answer (from the title or brief). "
+            "Check whether the body contains a single, clearly-written paragraph of 40-60 words "
+            "that directly and completely answers that question. Score on:\n"
+            "  - Paragraph exists and is 40-60 words (8 pts)\n"
+            "  - It directly and completely answers the main question (8 pts)\n"
+            "  - It reads as a standalone answer with no assumed context (4 pts)\n\n"
+
+            "--- MATRIX 3: Original Insight (out of 20) ---\n"
+            "Does the post contain at least one observation, angle, or recommendation that goes "
+            "beyond summarising what other articles say? Score on:\n"
+            "  - At least one specific, non-generic insight tied to the topic (8 pts)\n"
+            "  - The insight is supported by evidence or clear reasoning (7 pts)\n"
+            "  - The insight would not appear in a generic search result on this topic (5 pts)\n\n"
+
+            "Return your evaluation in exactly this format:\n"
+            "MATRIX 1 — SEO Friendly: [score]/20\n"
+            "MATRIX 2 — Clear Answer Paragraph: [score]/20\n"
+            "MATRIX 3 — Original Insight: [score]/20\n"
+            "TOTAL: [sum]/60\n"
+            "RESULT: PASS or FAIL\n"
+            "NOTES: [brief explanation for each score, and specific fixes required if FAIL]"
         ),
         expected_output=(
-            "APPROVED, or REJECTED with a numbered list of every failed checklist item."
+            "Three matrix scores (each out of 20), a total out of 60, a PASS or FAIL result, "
+            "and brief notes explaining each score with specific fixes listed if the result is FAIL."
         ),
         agent=agent,
         context=context_tasks,
