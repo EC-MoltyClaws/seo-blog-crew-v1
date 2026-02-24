@@ -59,3 +59,4 @@ Different agents may use different models or even different providers
 - Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - Never touch the .env file, as you risk deleting info
 - All tests should be tested with a crewai Agent wherever possible to simulate realistic calling
+- After writing a new functionality. Create tests for it in the tests folder, to be run from the test.py file
