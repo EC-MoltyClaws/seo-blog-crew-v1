@@ -16,14 +16,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          enable-caching: true
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync
 
       - name: Run blog crew
         env:
@@ -32,4 +31,4 @@ jobs:
           MAKE_WEBHOOK_FETCH_TOPIC: ${{ secrets.MAKE_WEBHOOK_FETCH_TOPIC }}
           MAKE_WEBHOOK_API_KEY: ${{ secrets.MAKE_WEBHOOK_API_KEY }}
           MAKE_WEBHOOK_PUBLISH_POST: ${{ secrets.MAKE_WEBHOOK_PUBLISH_POST }}
-        run: python main.py
+        run: uv run python main.py
