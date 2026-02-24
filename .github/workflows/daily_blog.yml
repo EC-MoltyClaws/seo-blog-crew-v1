@@ -1,0 +1,35 @@
+name: Daily Blog Post
+
+on:
+  schedule:
+    # Runs at 06:00 UTC every day. Adjust to suit your timezone:
+    # https://crontab.guru — e.g. "0 22 * * *" = 06:00 SGT (UTC+8)
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+    # Allows you to trigger a run manually from the GitHub Actions tab
+
+jobs:
+  run-crew:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run blog crew
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+          MAKE_WEBHOOK_FETCH_TOPIC: ${{ secrets.MAKE_WEBHOOK_FETCH_TOPIC }}
+          MAKE_WEBHOOK_API_KEY: ${{ secrets.MAKE_WEBHOOK_API_KEY }}
+          MAKE_WEBHOOK_PUBLISH_POST: ${{ secrets.MAKE_WEBHOOK_PUBLISH_POST }}
+        run: python main.py
