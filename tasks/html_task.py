@@ -1,27 +1,25 @@
+from pathlib import Path
 from crewai import Task
+
+_TEMPLATE_PATH = Path(__file__).parent.parent / "templates" / "blog_post_template.html"
 
 
 def build_html_task(agent, context_tasks):
+    template = _TEMPLATE_PATH.read_text(encoding="utf-8")
+
     return Task(
         description=(
-            "Convert the blog post draft from context into a complete HTML document "
-            "matching the WanderPaws Shopify blog template.\n\n"
-            "Requirements:\n"
-            "- Use <h1> for the post title, <h2> for main sections, <h3> for FAQ entries\n"
-            "- Wrap the product promotion image in the correct data-slate markup at 383x383 px, "
-            "using the shopify_image_url from the manager's brief\n"
-            "- Link the first product mention to the utm_product_url from the brief\n"
-            "- Preserve all APA citations and the references section\n\n"
-            "Then output the five publishing fields the manager needs for Make.com:\n"
-            "- Title: plain text from the <title> tag\n"
-            "- Body: the full <body> HTML string\n"
-            "- Summary: the meta description (150-160 chars)\n"
-            "- Handle: lowercase-hyphen URL handle\n"
-            "- Tags: comma-separated meta keywords string"
+            "Convert the approved blog post draft from context into HTML using the template below. "
+            "If a revised draft is present in context, use that. Otherwise use the original draft.\n\n"
+            "Replace every {{PLACEHOLDER}} with the corresponding content from the draft or topic brief. "
+            "Follow every RULE comment exactly — they are constraints, not suggestions. "
+            "Remove all HTML comments and placeholder markers from the final output.\n\n"
+            "TEMPLATE:\n\n"
+            f"{template}"
         ),
         expected_output=(
-            "A valid HTML document followed by the five labelled publishing fields: "
-            "Title, Body, Summary, Handle, Tags."
+            "A complete HTML document with all placeholders filled in and all comments removed, "
+            "followed by the five labelled publishing fields: Title, Body, Summary, Handle, Tags."
         ),
         agent=agent,
         context=context_tasks,

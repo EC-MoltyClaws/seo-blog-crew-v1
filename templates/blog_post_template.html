@@ -1,0 +1,181 @@
+<!--
+  WanderPaws Blog Post Template
+  ==============================
+  This file defines the exact HTML structure every blog post must follow.
+  It is loaded directly into the HTML writer agent's task at runtime.
+
+  PLACEHOLDER CONVENTIONS
+  -----------------------
+  {{FIELD}}         Replace with the actual value from the topic brief or draft
+  /<!-- RULE: ... --/> An HTML comment explaining a constraint — remove before publishing
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <!--
+    RULE: <title> must be the exact title from the topic brief.
+    Do not rephrase, shorten, or improve it.
+  -->
+  <title>{{TITLE}}</title>
+
+  <!--
+    RULE: Meta description must be between 150 and 160 characters.
+    It should summarise the post for search engines in plain, engaging English.
+  -->
+  <meta name="description" content="{{META_DESCRIPTION_150_TO_160_CHARS}}">
+
+  <!--
+    RULE: Keywords are a non-empty comma-separated string.
+    Use the meta keywords from the writer's draft.
+  -->
+  <meta name="keywords" content="{{KEYWORD_1}}, {{KEYWORD_2}}, {{KEYWORD_3}}">
+</head>
+
+<body>
+  <!-- ═══════════════════════════════════════════
+       TABLE OF CONTENTS
+       One <li> per major section. Use anchor links.
+       ═══════════════════════════════════════════ -->
+  <nav aria-label="Table of contents">
+    <ul>
+      <li><a href="#key-takeaways">Key Takeaways</a></li>
+      <li><a href="#section-1">{{SECTION_1_HEADING}}</a></li>
+      <li><a href="#section-2">{{SECTION_2_HEADING}}</a></li>
+      <!-- ... add one <li> per body section ... -->
+      <li><a href="#faq">Frequently Asked Questions</a></li>
+      <li><a href="#references">References</a></li>
+    </ul>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════
+       KEY TAKEAWAYS
+       RULE: 3 to 5 bullet points. Each bullet must be under 15 words.
+       ═══════════════════════════════════════════ -->
+  <h2 id="key-takeaways">Key Takeaways</h2>
+  <ul>
+    <li>{{TAKEAWAY_1}}</li>
+    <li>{{TAKEAWAY_2}}</li>
+    <li>{{TAKEAWAY_3}}</li>
+    <!-- add up to 2 more if the draft includes them -->
+  </ul>
+
+
+  <!-- ═══════════════════════════════════════════
+       MAIN BODY
+       RULE: 6 to 8 sections. Each section uses <h2>. Each <p> is under 70 words.
+       RULE: At least 2 APA in-text citations must appear across all body paragraphs.
+             Format: (Author, Year) or (Author et al., Year)
+       ═══════════════════════════════════════════ -->
+
+  <h2 id="section-1">{{SECTION_1_HEADING}}</h2>
+  <p>{{SECTION_1_PARAGRAPH}} ({{AUTHOR_1}}, {{YEAR_1}})</p>
+
+  <h2 id="section-2">{{SECTION_2_HEADING}}</h2>
+  <p>{{SECTION_2_PARAGRAPH}}</p>
+
+  <!-- ... repeat <h2> + <p> blocks for each remaining section ... -->
+
+
+  <!-- ═══════════════════════════════════════════
+       PRODUCT PROMOTION
+       RULE: Write 1-2 sentences of prose introducing the product naturally.
+             The first mention of the product name in the prose must be a UTM link.
+       RULE: The product image block below must be reproduced exactly as shown.
+             Do not alter the tag names, attributes, nesting, or style values.
+             Only replace {{UTM_PRODUCT_URL}}, {{PRODUCT_NAME}}, and {{SHOPIFY_IMAGE_URL}}.
+       ═══════════════════════════════════════════ -->
+  <h2 id="product">{{PRODUCT_SECTION_HEADING}}</h2>
+
+  <!--
+    RULE: Copy this image block exactly. Do not change tag structure, attribute names,
+    nesting order, or the style value. Only fill in the three placeholders.
+      - href / {{UTM_PRODUCT_URL}} — utm_product_url from the topic brief
+      - title / {{PRODUCT_NAME}}   — the product name
+      - src  / {{SHOPIFY_IMAGE_URL}} — shopify_image_url from the topic brief
+  -->
+  <a href="{{UTM_PRODUCT_URL}}" target="_blank" title="{{PRODUCT_NAME}}">
+    <span data-slate-node="text">
+      <span data-slate-leaf="true">
+        <span data-slate-string="true">
+          <img alt="" height="383" src="{{SHOPIFY_HOSTED_IMAGE_LINK}}" style="display: block; margin-left: auto; margin-right: auto;" width="383">
+        </span>
+      </span>
+    </span>
+  </a>
+
+  <p> 
+    {{PRODUCT_PROMOTION_PARAGRAPH_BEFORE_PRODUCT_URL}}
+    <!-- RULE: First product name mention in prose — must be a UTM link. -->
+    <a href="{{UTM_PRODUCT_URL}}">{{PRODUCT_NAME}}</a> {{PRODUCT_PROMOTION_SENTENCE}}
+    {{PRODUCT_PROMOTION_PARAGRAPH_AFTER_PRODUCT_URL}}
+  </p>
+
+  <!-- ═══════════════════════════════════════════
+       FAQ
+       RULE: Exactly 5 questions total.
+             - Questions 1, 2, 3 must be topic-related (about the subject matter).
+             - Questions 4, 5 must be product-related (about the WanderPaws product).
+       RULE: Each question uses <h3>. Each answer uses <p>.
+       ═══════════════════════════════════════════ -->
+  <h2 id="faq">Frequently Asked Questions</h2>
+
+  <!-- Topic-related questions (must have exactly 3) -->
+  <h3>{{TOPIC_QUESTION_1}}</h3>
+  <p>{{TOPIC_ANSWER_1}}</p>
+
+  <h3>{{TOPIC_QUESTION_2}}</h3>
+  <p>{{TOPIC_ANSWER_2}}</p>
+
+  <h3>{{TOPIC_QUESTION_3}}</h3>
+  <p>{{TOPIC_ANSWER_3}}</p>
+
+  <!-- Product-related questions (must have exactly 2) -->
+  <h3>{{PRODUCT_QUESTION_1}}</h3>
+  <p>{{PRODUCT_ANSWER_1}}</p>
+
+  <h3>{{PRODUCT_QUESTION_2}}</h3>
+  <p>{{PRODUCT_ANSWER_2}}</p>
+
+
+  <!-- ═══════════════════════════════════════════
+       REFERENCES
+       RULE: Full APA 7th edition entries. Every entry must include the source URL.
+             At least 2 references must correspond to in-text citations in the body.
+       FORMAT: Author, A. A. (Year). Title of work. Publisher/Journal. URL
+       ═══════════════════════════════════════════ -->
+  <h2 id="references">References</h2>
+  <a href="{{URL_1}}">
+    {{AUTHOR_1_LAST}}, {{AUTHOR_1_INITIALS}}. ({{YEAR_1}}). {{ARTICLE_TITLE_1}}. {{JOURNAL_OR_SITE_1}}. {{URL_1}}</p>
+  </a>
+  <a href="{{URL_2}}">
+    <p>{{AUTHOR_2_LAST}}, {{AUTHOR_2_INITIALS}}. ({{YEAR_2}}). {{ARTICLE_TITLE_2}}. {{JOURNAL_OR_SITE_2}}. {{URL_2}}</p>
+  </a>
+      <!-- add more references as needed -->
+
+</body>
+</html>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PUBLISHING FIELDS
+     Output these five fields after the HTML, labelled exactly as shown.
+     They are read by the publisher agent and sent to Make.com.
+     ═══════════════════════════════════════════════════════════════
+
+  RULE: Title — exact title from the topic brief. Must match <title> and <h1> above.
+  RULE: Body  — the full HTML string inside <body>...</body> only (no <head>).
+  RULE: Summary — the meta description (150–160 characters, plain text).
+  RULE: Handle — lowercase letters and hyphens only, derived from the title.
+                  Example: "Best Dog Harnesses for 2025" → "best-dog-harnesses-for-2025"
+  RULE: Tags — non-empty, comma-separated keyword string from the draft's meta keywords.
+
+Title:   {{TITLE}}
+Body:    {{FULL_BODY_HTML}}
+Summary: {{META_DESCRIPTION_150_TO_160_CHARS}}
+Handle:  {{url-handle-from-title}}
+Tags:    {{keyword1, keyword2, keyword3}}
+-->

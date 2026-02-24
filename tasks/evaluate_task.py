@@ -19,11 +19,10 @@ def build_evaluate_writing_task(agent, context_tasks):
 
             "--- MATRIX 2: Clear Answer Paragraph (out of 20) ---\n"
             "Identify the main question the post is trying to answer (from the title or brief). "
-            "Check whether the body contains a single, clearly-written paragraph of 40-60 words "
-            "that directly and completely answers that question. Score on:\n"
-            "  - Paragraph exists and is 40-60 words (8 pts)\n"
-            "  - It directly and completely answers the main question (8 pts)\n"
-            "  - It reads as a standalone answer with no assumed context (4 pts)\n\n"
+            "Check whether the key insights section directly and completely answers the "
+            "central question question. Score on:\n"
+            "  - It directly and completely answers the main question (15 pts)\n"
+            "  - It reads as a standalone answer with no assumed context (5 pts)\n\n"
 
             "--- MATRIX 3: Original Insight (out of 20) ---\n"
             "Does the post contain at least one observation, angle, or recommendation that goes "

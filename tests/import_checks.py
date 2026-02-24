@@ -1,5 +1,4 @@
 def check_imports():
-    from agents.manager import build_manager_agent
     from agents.publisher import build_publisher_agent
     from agents.researcher import build_researcher_agent
     from agents.writer import build_writer_agent
@@ -10,18 +9,17 @@ def check_imports():
     from tasks.write_task import build_write_task
     from tasks.html_task import build_html_task
     from tasks.evaluate_task import build_evaluate_writing_task
+    from tasks.revise_writing_task import build_revise_writing_task
     from tasks.publish_task import build_publish_task
 
 
 def check_agent_instantiation():
-    from agents.manager import build_manager_agent
     from agents.publisher import build_publisher_agent
     from agents.researcher import build_researcher_agent
     from agents.writer import build_writer_agent
     from agents.html_writer import build_html_writer_agent
     from agents.evaluator import build_evaluator_agent
 
-    build_manager_agent()
     build_publisher_agent()
     build_researcher_agent()
     build_writer_agent()
@@ -40,6 +38,7 @@ def check_task_instantiation():
     from tasks.write_task import build_write_task
     from tasks.html_task import build_html_task
     from tasks.evaluate_task import build_evaluate_writing_task
+    from tasks.revise_writing_task import build_revise_writing_task
     from tasks.publish_task import build_publish_task
 
     publisher = build_publisher_agent()
@@ -52,5 +51,6 @@ def check_task_instantiation():
     research_task = build_research_task(researcher, context_tasks=[fetch_topic_task])
     write_task = build_write_task(writer, context_tasks=[fetch_topic_task, research_task])
     evaluate_writing_task = build_evaluate_writing_task(evaluator, context_tasks=[fetch_topic_task, write_task])
-    html_task = build_html_task(html_writer, context_tasks=[fetch_topic_task, write_task, evaluate_writing_task])
+    revise_writing_task = build_revise_writing_task(writer, context_tasks=[fetch_topic_task, write_task, evaluate_writing_task])
+    html_task = build_html_task(html_writer, context_tasks=[fetch_topic_task, write_task, evaluate_writing_task, revise_writing_task])
     build_publish_task(publisher, context_tasks=[fetch_topic_task, html_task, evaluate_writing_task])

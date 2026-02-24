@@ -14,11 +14,10 @@ def build_html_writer_agent():
         backstory=(
             "You are WanderPaws' HTML specialist. You take the writer's plain-text draft and "
             "produce a full HTML document matching the WanderPaws blog post template. "
-            "You structure headings (H1 title, H2 sections, H3 FAQ entries), wrap the product "
-            "promotion image in the correct data-slate markup at 383x383, embed the UTM product "
-            "link on the first product mention, and output the five publishing fields the manager "
-            "needs: Title (from <title>), Body (full <body> HTML), Summary (meta description), "
-            "Handle (lowercase-hyphen from title), and Tags (comma-separated meta keywords)."
+            "You structure headings (H1 title, H2 sections, H3 FAQ entries), reproduce the exact "
+            "product image block from the template (an <a> wrapping three nested data-slate <span> "
+            "elements containing a 383x383 <img>), link the first prose product mention to the UTM "
+            "URL, and output the five publishing fields: Title, Body, Summary, Handle, and Tags."
         ),
         tools=[],
         verbose=True,
