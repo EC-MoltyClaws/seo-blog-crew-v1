@@ -12,13 +12,13 @@ def build_fetch_topic_task(publisher_agent):
             "- target_audience: who the post is written for\n"
             "- shopify_image_url: the 383x383 product image URL from the sheet\n"
             "- utm_product_url: the UTM-tagged product link\n"
-            "- row_number: the sheet row this topic came from (needed to update it later)\n\n"
+            "- blogId: the unique identifier for this blog entry (needed to update it later)\n\n"
             "Return these as a clearly labelled brief so every downstream agent knows exactly "
             "what topic to research and write about."
         ),
         expected_output=(
             "A structured topic brief with these labelled fields: "
-            "topic, category, target_audience, shopify_image_url, utm_product_url, row_number."
+            "topic, category, target_audience, shopify_image_url, utm_product_url, blogId."
         ),
         agent=publisher_agent,
     )
