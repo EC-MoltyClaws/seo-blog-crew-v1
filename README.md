@@ -9,7 +9,8 @@ CrewAI pipeline that researches, writes, formats, and evaluates SEO blog posts f
 ```
 seo-blog-crew-v1/
 ├── .env                  # API keys and webhook URLs (never committed)
-├── environment.yml       # Conda environment definition
+├── pyproject.toml        # Python dependencies (uv)
+├── uv.lock               # Locked dependency versions
 ├── main.py               # Entry point — run this to kick off the crew
 ├── crew.py               # Assembles agents + tasks into a Crew
 ├── llm.py                # LLM configuration shared by all agents
@@ -45,8 +46,7 @@ seo-blog-crew-v1/
 ## Setup
 
 ```bash
-conda env create -f environment.yml
-conda activate seo-blog-crew-v1-env
+uv sync
 cp .env.example .env   # then fill in your keys
 ```
 

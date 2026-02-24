@@ -44,16 +44,16 @@ if __name__ == "__main__":
     print("\nRunning pre-push checks...\n")
 
     results = [
-        # check("Env vars set",                      check_env_vars),
-        # check("Gemini 2.5 Flash reachable",        check_llm_flash),
-        # check("Gemini 2.5 Pro reachable",          check_llm_pro),
-        # check("Serper API reachable",              check_serper_api),
-        # check("Make.com fetch topic reachable",    check_make_fetch_topic),
-        # check("Make.com publish post reachable",   check_make_publish_post),
+        check("Env vars set",                      check_env_vars),
+        check("Gemini 2.5 Flash reachable",        check_llm_flash),
+        check("Gemini 2.5 Pro reachable",          check_llm_pro),
+        check("Serper API reachable",              check_serper_api),
+        check("Make.com fetch topic reachable",    check_make_fetch_topic),
+        check("Make.com publish post reachable",   check_make_publish_post),
         check("Publish pipeline handoff",           check_publish_pipeline),
-        # check("All imports resolve",               check_imports),
-        # check("Agents instantiate",                check_agent_instantiation),
-        # check("Tasks instantiate",                 check_task_instantiation),
+        check("All imports resolve",               check_imports),
+        check("Agents instantiate",                check_agent_instantiation),
+        check("Tasks instantiate",                 check_task_instantiation),
     ]
 
     total = len(results)
