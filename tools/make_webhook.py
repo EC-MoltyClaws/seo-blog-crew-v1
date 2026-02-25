@@ -128,6 +128,39 @@ def publish_blog_post(
     return json.dumps(data, indent=2)
 
 
+@tool("Get Published Shopify Blog Posts")
+def get_shopify_blog_posts() -> str:
+    """
+    Calls the Make.com 'Get Shopify Blog Posts' webhook scenario.
+    Returns a list of published WanderPaws blog post titles and URLs as JSON.
+    Use this to find real, existing posts that can be referenced for internal linking.
+    """
+    url = os.getenv("MAKE_WEBHOOK_FETCH_BLOG_POSTS")
+    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
+
+    if not url:
+        raise ValueError("MAKE_WEBHOOK_FETCH_BLOG_POSTS missing in .env")
+    if not api_key:
+        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
+
+    headers = {
+        "Content-Type": "application/json",
+        "x-make-apikey": api_key,
+    }
+
+    response = requests.post(url, json={}, headers=headers, timeout=30)
+
+    # Make.com returns 200 even on logical failures, so check the body too
+    response.raise_for_status()
+
+    try:
+        data = response.json()
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Make.com returned non-JSON response: {e}\nBody: {response.text}")
+
+    return json.dumps(data, indent=2)
+
+
 # ── Connection test tools ─────────────────────────────────────────────────────
 # Lightweight tools used only in test.py to verify each webhook is reachable.
 # They do not affect production data.
@@ -156,6 +189,32 @@ def test_fetch_topic_connection() -> str:
     }
 
     response = requests.post(url, json=dummy_payload, headers=headers, timeout=30)
+
+    # Make.com returns 200 even on logical failures, so check the body too
+    response.raise_for_status()
+    return f"Status: {response.status_code}\nBody: {response.text}"
+
+
+@tool("Test Shopify Blog Posts Webhook Connection")
+def test_shopify_blog_posts_connection() -> str:
+    """
+    Sends a test request to the Shopify blog posts webhook and returns the raw response.
+    Used to verify the Make.com connection is working before a full pipeline run.
+    """
+    url = os.getenv("MAKE_WEBHOOK_FETCH_BLOG_POSTS")
+    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
+
+    if not url:
+        raise ValueError("MAKE_WEBHOOK_FETCH_BLOG_POSTS missing in .env")
+    if not api_key:
+        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
+
+    headers = {
+        "Content-Type": "application/json",
+        "x-make-apikey": api_key,
+    }
+
+    response = requests.post(url, json={"isTest": True}, headers=headers, timeout=30)
 
     # Make.com returns 200 even on logical failures, so check the body too
     response.raise_for_status()

@@ -28,6 +28,32 @@ def check_make_fetch_topic():
         raise RuntimeError("Fetch topic agent returned no result")
 
 
+def check_make_shopify_blog_posts():
+    """Runs a single agent with the Shopify blog posts test tool through CrewAI."""
+    from tools.make_webhook import test_shopify_blog_posts_connection
+
+    agent = Agent(
+        llm=get_default_llm(verbose=False),
+        role="Connection Tester",
+        goal="Test that the Shopify blog posts webhook is reachable.",
+        backstory="You are a connection tester. You call the assigned tool and report the result.",
+        tools=[test_shopify_blog_posts_connection],
+        verbose=True,
+    )
+
+    task = Task(
+        description="Call the Test Shopify Blog Posts Webhook Connection tool and report the result.",
+        expected_output="The status code and raw response body from the webhook.",
+        agent=agent,
+    )
+
+    crew = Crew(agents=[agent], tasks=[task], process=Process.sequential, verbose=False)
+    result = crew.kickoff()
+
+    if not result:
+        raise RuntimeError("Shopify blog posts agent returned no result")
+
+
 def check_make_publish_post():
     """Runs a single agent with the publish post test tool through CrewAI."""
     from tools.make_webhook import test_publish_post_connection

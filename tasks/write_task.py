@@ -25,7 +25,11 @@ def build_write_task():
             "(used by the evaluator to verify the first product mention)\n\n"
             "Write in plain, friendly English aimed at the target audience from the brief. "
             "Prioritise quality, accuracy, and engaging prose. Do not worry about HTML formatting — "
-            "that is handled in a later step."
+            "that is handled in a later step.\n\n"
+            "IMPORTANT — internal links: if the research findings include a 'Related WanderPaws Posts' "
+            "section, you may naturally reference those posts by title and URL within the body. "
+            "Do not link to or mention any WanderPaws blog posts that are not in that list. "
+            "Never invent or guess internal WanderPaws URLs."
         ),
         expected_output=(
             "A complete blog post draft with all required sections: title, table of contents, "
