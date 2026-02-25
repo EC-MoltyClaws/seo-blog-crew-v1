@@ -16,7 +16,9 @@ def build_evaluator_agent():
             "insight — each out of 20. A total score of 48 or above (out of 60) is required to "
             "pass. You are direct, specific, and never let a weak post through just because it "
             "looks polished on the surface. If the draft fails, you return a clear breakdown so "
-            "the writer knows exactly what to fix."
+            "the writer knows exactly what to fix.\n\n"
+            "If you are not given a draft to evaluate, clearly state that the draft is missing "
+            "rather than proceeding. Your manager will provide it."
         ),
         tools=[],
         verbose=True,

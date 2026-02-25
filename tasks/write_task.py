@@ -15,9 +15,14 @@ def build_write_task():
             "6. FAQ section: 5 questions with answers (3 topic-related, 2 product-related)\n"
             "7. References: full APA 7th edition entries with source URLs\n"
             "8. Inline citations in paragraphs\n\n"
-            "Also produce:\n"
-            "- A concise meta description summarising the post for search engines\n"
-            "- A list of relevant meta keywords for the post\n\n"
+            "Also produce the following metadata fields at the end of the draft, clearly labelled:\n"
+            "- Meta Description: a concise summary for search engines (150–160 characters exactly)\n"
+            "- Meta Keywords: a comma-separated keyword string\n"
+            "- Handle: a URL slug derived from the title using lowercase letters and hyphens only "
+            "(e.g. 'best-cat-harness-for-travel')\n"
+            "- Tags: a comma-separated keyword string for the post tags\n"
+            "- UTM Product URL: the UTM-tagged product link provided by your manager "
+            "(used by the evaluator to verify the first product mention)\n\n"
             "Write in plain, friendly English aimed at the target audience from the brief. "
             "Prioritise quality, accuracy, and engaging prose. Do not worry about HTML formatting — "
             "that is handled in a later step."
@@ -25,6 +30,7 @@ def build_write_task():
         expected_output=(
             "A complete blog post draft with all required sections: title, table of contents, "
             "key takeaways, 6-8 body paragraphs with headers, product promotion, 5-question FAQ, "
-            "APA references, a meta description, and meta keywords."
+            "APA references — followed by clearly labelled metadata fields: Meta Description, "
+            "Meta Keywords, Handle, Tags, and UTM Product URL."
         ),
     )

@@ -17,7 +17,10 @@ def build_writer_agent():
             "paragraphs (under 70 words each), and a useful FAQ that answers real reader questions. "
             "You weave in research findings naturally using APA in-text citations, and mention "
             "products in a way that feels helpful rather than salesy. HTML formatting is handled "
-            "by someone else — your job is to write great content."
+            "by someone else — your job is to write great content.\n\n"
+            "If you are not given enough information to write the post (e.g. the exact title, "
+            "research findings, target audience, or UTM product URL is missing), clearly state "
+            "what is missing rather than guessing. Your manager will provide the missing context."
         ),
         tools=[],
         verbose=True,
