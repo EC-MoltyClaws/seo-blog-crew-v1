@@ -1,27 +1,19 @@
 from crewai import Task
 
 
-def build_publish_task(publisher_agent, context_tasks):
+def build_publish_task(publisher_agent):
     return Task(
         description=(
-            "The blog post has been evaluated. If the evaluation result is APPROVED, proceed.\n\n"
-            "Using the five publishing fields from the HTML formatter's output "
-            "(Title, Body, Summary, Handle, Tags) and the blogId from the topic brief:\n\n"
-            "1. Call the Get Latest Unwritten Blog Topic tool with the "
-            "Title, Body, Summary, Handle, and Tags fields to publish the post.\n\n"
-            "2. From the publish response, extract the post URL and short URL.\n\n"
-            "3. Update the Main Google Sheet row (using blogId) with:\n"
-            "   - Written By: 'crew-v1'\n"
-            "   - Post Date: today's date in MM/DD/YYYY format\n"
-            "   - Post URL: the full post URL from the publish response\n"
-            "   - Short URL: the short URL from the publish response\n\n"
-            "If the evaluation result is REJECTED, do not publish. "
-            "Report the rejection reason instead."
+            "The blog post has been written and formatted as HTML. It is ready to publish.\n\n"
+            "TOPIC BRIEF (contains blogId and metadata):\n{topic_brief}\n\n"
+            "HTML OUTPUT (the formatted post ready for Shopify):\n{html_output}\n\n"
+            "Using the five publishing fields from the HTML output "
+            "(Title, Body, Summary, Handle, Tags) and the blogId from the topic brief, "
+            "call the Publish Blog Post to Shopify tool to publish the post.\n\n"
+            "Unless a specific date and time is provided in the topic brief, publish for current time."
         ),
         expected_output=(
-            "Confirmation that the post was published with the post URL, "
-            "or a clear rejection report if the evaluation did not pass."
+            "Confirmation that the post was published successfully."
         ),
         agent=publisher_agent,
-        context=context_tasks,
     )

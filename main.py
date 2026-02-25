@@ -1,16 +1,12 @@
-import sys
 from dotenv import load_dotenv
-from crew import build_crew
+
+from flow import BlogFlow
 
 load_dotenv()
 
 
 def main():
-    skip_research = "--skip-research" in sys.argv
-    result = build_crew(skip_research=skip_research).kickoff()
-
-    print("\n=== CREW RESULT ===")
-    print(result)
+    BlogFlow().kickoff()
 
 
 if __name__ == "__main__":
