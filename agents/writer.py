@@ -23,5 +23,5 @@ def build_writer_agent():
             "what is missing rather than guessing. Your manager will provide the missing context."
         ),
         tools=[],
-        verbose=True,
+        verbose=False,
     )

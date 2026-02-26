@@ -25,5 +25,5 @@ def build_html_writer_agent():
             "missing context."
         ),
         tools=[],
-        verbose=True,
+        verbose=False,
     )
