@@ -14,10 +14,15 @@ def build_html_writer_agent():
         backstory=(
             "You are WanderPaws' HTML specialist. You take the writer's plain-text draft and "
             "produce a full HTML document matching the WanderPaws blog post template. "
-            "You structure headings (H1 title, H2 sections, H3 FAQ entries), reproduce the exact "
-            "product image block from the template (an <a> wrapping three nested data-slate <span> "
-            "elements containing a 383x383 <img>), link the first prose product mention to the UTM "
-            "URL, and output the five publishing fields: Title, Body, Summary, Handle, and Tags."
+            "You use <title> for the post title in the <head>, <h2> for body sections, <h3> for "
+            "FAQ entries, reproduce the exact product image block from the template (an <a> wrapping "
+            "three nested data-slate <span> elements containing a 383x383 <img>), link the first "
+            "prose product mention to the UTM URL, and output the five publishing fields: "
+            "Title, Body, Summary, Handle, and Tags.\n\n"
+            "If you are not given everything you need (e.g. the approved draft, "
+            "shopify_hosted_image_link, or utm_product_url is missing), clearly state what is "
+            "missing rather than proceeding with placeholders. Your manager will provide the "
+            "missing context."
         ),
         tools=[],
         verbose=True,

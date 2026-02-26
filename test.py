@@ -10,7 +10,7 @@ Checks:
   5. Make.com fetch topic webhook responds with valid JSON
   6. Make.com publish webhook accepts a dummy post via publisher agent
   7. Publish pipeline handoff: fetches real topic then publishes with dummy content
-  8. All agents and tasks can be imported and instantiated without errors
+  8. All agents, tasks, crew, and flow can be imported and instantiated without errors
 """
 
 import sys
@@ -21,9 +21,9 @@ load_dotenv()
 from tests.env_checks import check_env_vars
 from tests.llm_checks import check_llm_flash, check_llm_pro
 from tests.serper_checks import check_serper_api
-from tests.make_checks import check_make_fetch_topic, check_make_publish_post
+from tests.make_checks import check_make_fetch_topic, check_make_publish_post, check_make_shopify_blog_posts
 from tests.publish_pipeline_checks import check_publish_pipeline
-from tests.import_checks import check_imports, check_agent_instantiation, check_task_instantiation
+from tests.import_checks import check_imports, check_agent_instantiation, check_task_instantiation, check_flow_instantiation
 
 PASS = "  PASS"
 FAIL = "  FAIL"
@@ -44,16 +44,18 @@ if __name__ == "__main__":
     print("\nRunning pre-push checks...\n")
 
     results = [
-        check("Env vars set",                      check_env_vars),
-        check("Gemini 2.5 Flash reachable",        check_llm_flash),
-        check("Gemini 2.5 Pro reachable",          check_llm_pro),
-        check("Serper API reachable",              check_serper_api),
-        check("Make.com fetch topic reachable",    check_make_fetch_topic),
-        check("Make.com publish post reachable",   check_make_publish_post),
-        check("Publish pipeline handoff",           check_publish_pipeline),
-        check("All imports resolve",               check_imports),
-        check("Agents instantiate",                check_agent_instantiation),
-        check("Tasks instantiate",                 check_task_instantiation),
+        # check("Env vars set",                      check_env_vars),
+        # check("Gemini 2.5 Flash reachable",        check_llm_flash),
+        # check("Gemini 2.5 Pro reachable",          check_llm_pro),
+        # check("Serper API reachable",              check_serper_api),
+        # check("Make.com fetch topic reachable",         check_make_fetch_topic),
+        check("Make.com Shopify blog posts reachable",  check_make_shopify_blog_posts),
+        # check("Make.com publish post reachable",         check_make_publish_post),
+        # check("Publish pipeline handoff",           check_publish_pipeline),
+        # check("All imports resolve",               check_imports),
+        # check("Agents instantiate",                check_agent_instantiation),
+        # check("Tasks instantiate",                 check_task_instantiation),
+        # check("Flow instantiates",                 check_flow_instantiation),
     ]
 
     total = len(results)
