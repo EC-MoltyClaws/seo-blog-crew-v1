@@ -1,40 +1,74 @@
 import os
 import json
+import re
 import requests
 from datetime import datetime
 from crewai.tools import tool
 
+def get_github_headers():
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        raise ValueError("GITHUB_TOKEN missing in .env")
+    return {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+def get_repo():
+    repo = os.getenv("GITHUB_REPOSITORY")
+    if not repo:
+        raise ValueError("GITHUB_REPOSITORY missing in .env (e.g., 'EC-MoltyClaws/seo-blog-crew-v1')")
+    return repo
 
 @tool("Get Latest Unwritten Blog Topic")
 def get_latest_topic() -> str:
     """
-    Calls the Make.com 'Get Latest Unwritten Blog' webhook scenario.
-    Returns the next unwritten blog topic and its associated fields from the Google Sheet as JSON.
+    Fetches the oldest open GitHub Issue with the 'blog-queue' label.
+    Parses the issue body to extract topic fields.
+    Returns the next unwritten blog topic and its associated fields as JSON.
     """
-    url = os.getenv("MAKE_WEBHOOK_FETCH_TOPIC")
-    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
+    headers = get_github_headers()
+    repo = get_repo()
     
-    if not url:
-        raise ValueError("MAKE_WEBHOOK_FETCH_TOPIC missing in .env")
-    if not api_key:
-        raise ValueError("MAKE_WEBHOOK_FETCH_TOPIC_API_KEY missing in .env")
+    url = f"https://api.github.com/repos/{repo}/issues"
+    params = {
+        "state": "open",
+        "labels": "blog-queue",
+        "sort": "created",
+        "direction": "asc",
+        "per_page": 1
+    }
     
-    headers = {
-    "Content-Type": "application/json",
-    "x-make-apikey": api_key
-}
-
-    response = requests.post(url, json={}, headers=headers, timeout=30)
-
-    # Make.com returns 200 even on logical failures, so check the body too
+    response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
+    issues = response.json()
+    
+    if not issues:
+        raise ValueError("No open issues found with label 'blog-queue'.")
+    
+    issue = issues[0]
+    body = issue.get("body", "")
+    
+    fields = {}
+    
+    def extract_field(header):
+        match = re.search(rf"### {header}\s*\n+(.*?)\s*(?:\n###|\Z)", body, re.DOTALL)
+        return match.group(1).strip() if match else ""
 
-    try:
-        data = response.json()
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Make.com returned non-JSON response: {e}\nBody: {response.text}")
-
-    return json.dumps(data, indent=2)
+    fields["title"] = extract_field("Blog Post Title")
+    fields["topic"] = extract_field("Topic")
+    fields["category"] = extract_field("Category")
+    fields["target_audience"] = extract_field("Target Audience")
+    fields["shopify_hosted_image_link"] = extract_field("Shopify Hosted Image Link")
+    fields["utm_product_url"] = extract_field("UTM Product URL")
+    fields["blogId"] = str(issue["number"])
+    
+    # Validation
+    for k, v in fields.items():
+        if not v:
+            print(f"Warning: Extracted empty value for '{k}' from issue #{issue['number']}")
+            
+    return json.dumps(fields, indent=2)
 
 @tool("Publish Blog Post to Shopify")
 def publish_blog_post(
@@ -51,19 +85,7 @@ def publish_blog_post(
 ) -> str:
     """
     Calls the Make.com 'Post Blog To Shopify' webhook scenario to publish the blog post.
-    Also updates the Google Sheet row with the post URL and publication date.
-
-    Args:
-        blogTitle: The blog post title.
-        blogBodyHtml: The full HTML body of the post.
-        summaryHtml: A short HTML summary/excerpt of the post.
-        blogUrlHandle: The URL-friendly slug for the post.
-        blogPublishDate: The publish date in MM/DD/YYYY h:mm A format (e.g. 02/23/2026 9:30 AM).
-        tags: Comma-separated tags for the post.
-        blogID: The Google Sheet row ID for this topic.
-        skillVersion: The version identifier for the writing pipeline (e.g. 'v1').
-        imageAltText: Optional. Alt text for the featured image.
-        imageUrl: Optional. URL of the featured image.
+    Then closes the GitHub issue and logs the post to published_posts.json.
     """
     url = os.getenv("MAKE_WEBHOOK_PUBLISH_POST")
     api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
@@ -78,8 +100,6 @@ def publish_blog_post(
         "x-make-apikey": api_key,
     }
 
-    # Parse and reformat the date to ensure consistent MM/DD/YYYY h:mm A output.
-    # The agent may pass the hour zero-padded (e.g. "09:30 AM") — both are accepted.
     accepted_formats = ["%m/%d/%Y %I:%M %p", "%m/%d/%Y %H:%M"]
     parsed_date = None
     for fmt in accepted_formats:
@@ -95,7 +115,7 @@ def publish_blog_post(
             "Expected MM/DD/YYYY h:mm AM/PM (e.g. 02/23/2026 9:30 AM)."
         )
 
-    hour = parsed_date.strftime("%I").lstrip("0")  # Remove leading zero from hour (e.g. "09" → "9")
+    hour = parsed_date.strftime("%I").lstrip("0")
     blog_publish_date = parsed_date.strftime(f"%m/%d/%Y {hour}:%M %p")
 
     payload = {
@@ -103,38 +123,66 @@ def publish_blog_post(
         "blogBodyHtml": blogBodyHtml,
         "summaryHtml": summaryHtml,
         "blogUrlHandle": blogUrlHandle,
-        "blogPublishDate": blog_publish_date,  # Always MM/DD/YYYY h:mm A after validation above
+        "blogPublishDate": blog_publish_date,
         "tags": tags,
-        "blogID": blogID,
+        "blogID": blogID, # Make.com will now receive Issue Number
         "skillVersion": skillVersion,
     }
 
-    # Only include optional image fields if provided
     if imageAltText:
         payload["imageAltText"] = imageAltText
     if imageUrl:
         payload["imageUrl"] = imageUrl
 
     response = requests.post(url, json=payload, headers=headers, timeout=60)
-
-    # Make.com returns 200 even on logical failures, so check the body too
     response.raise_for_status()
 
     try:
         data = response.json()
     except json.JSONDecodeError as e:
         raise ValueError(f"Make.com returned non-JSON response: {e}\nBody: {response.text}")
+        
+    # --- PHASE 2: Update GitHub & Log ---
+    try:
+        gh_headers = get_github_headers()
+        repo = get_repo()
+        
+        # Log to JSON
+        log_entry = {
+            "title": blogTitle,
+            "handle": blogUrlHandle,
+            "publish_date": blog_publish_date,
+            "issue_number": blogID,
+            "shopify_tags": tags
+        }
+        
+        log_file = "published_posts.json"
+        log_data = []
+        if os.path.exists(log_file):
+            with open(log_file, "r") as f:
+                try:
+                    log_data = json.load(f)
+                except:
+                    pass
+        log_data.append(log_entry)
+        with open(log_file, "w") as f:
+            json.dump(log_data, f, indent=2)
+
+        # Comment and close Issue
+        issue_number = blogID
+        comment_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/comments"
+        requests.post(comment_url, headers=gh_headers, json={"body": f"🎉 **Published successfully!**\n\n**Title:** {blogTitle}\n**Date:** {blog_publish_date}"}).raise_for_status()
+        
+        issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+        requests.patch(issue_url, headers=gh_headers, json={"state": "closed", "state_reason": "completed"}).raise_for_status()
+        
+    except Exception as e:
+        print(f"Warning: Make.com succeeded, but GitHub/JSON update failed: {e}")
 
     return json.dumps(data, indent=2)
 
-
 @tool("Get Published Shopify Blog Posts")
 def get_shopify_blog_posts() -> str:
-    """
-    Calls the Make.com 'Get Shopify Blog Posts' webhook scenario.
-    Returns a list of published WanderPaws blog post titles and URLs as JSON.
-    Use this to find real, existing posts that can be referenced for internal linking.
-    """
     url = os.getenv("MAKE_WEBHOOK_FETCH_BLOG_POSTS")
     api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
 
@@ -149,8 +197,6 @@ def get_shopify_blog_posts() -> str:
     }
 
     response = requests.post(url, json={}, headers=headers, timeout=30)
-
-    # Make.com returns 200 even on logical failures, so check the body too
     response.raise_for_status()
 
     try:
@@ -160,92 +206,32 @@ def get_shopify_blog_posts() -> str:
 
     return json.dumps(data, indent=2)
 
-
-# ── Connection test tools ─────────────────────────────────────────────────────
-# Lightweight tools used only in test.py to verify each webhook is reachable.
-# They do not affect production data.
-
 @tool("Test Fetch Topic Webhook Connection")
 def test_fetch_topic_connection() -> str:
-    """
-    Sends a test request to the fetch topic webhook and returns the raw response.
-    Used to verify the Make.com connection is working before a full pipeline run.
-    """
-    url = os.getenv("MAKE_WEBHOOK_FETCH_TOPIC")
-    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
-
-    if not url:
-        raise ValueError("MAKE_WEBHOOK_FETCH_TOPIC missing in .env")
-    if not api_key:
-        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
-
-    headers = {
-        "Content-Type": "application/json",
-        "x-make-apikey": api_key,
-    }
-
-    dummy_payload = {
-        "isTest": True,
-    }
-
-    response = requests.post(url, json=dummy_payload, headers=headers, timeout=30)
-
-    # Make.com returns 200 even on logical failures, so check the body too
-    response.raise_for_status()
-    return f"Status: {response.status_code}\nBody: {response.text}"
-
+    return "Skipped. Now using GitHub API."
 
 @tool("Test Shopify Blog Posts Webhook Connection")
 def test_shopify_blog_posts_connection() -> str:
-    """
-    Sends a test request to the Shopify blog posts webhook and returns the raw response.
-    Used to verify the Make.com connection is working before a full pipeline run.
-    """
     url = os.getenv("MAKE_WEBHOOK_FETCH_BLOG_POSTS")
     api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
 
-    if not url:
-        raise ValueError("MAKE_WEBHOOK_FETCH_BLOG_POSTS missing in .env")
-    if not api_key:
-        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
-
     headers = {
         "Content-Type": "application/json",
         "x-make-apikey": api_key,
     }
-
     response = requests.post(url, json={"isTest": True}, headers=headers, timeout=30)
-
-    # Make.com returns 200 even on logical failures, so check the body too
     response.raise_for_status()
     return f"Status: {response.status_code}\nBody: {response.text}"
 
-
 @tool("Test Publish Post Webhook Connection")
 def test_publish_post_connection() -> str:
-    """
-    Sends a dummy post to the publish webhook and returns the raw response.
-    Used to verify the Make.com connection is working before a full pipeline run.
-    """
     url = os.getenv("MAKE_WEBHOOK_PUBLISH_POST")
     api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
-
-    if not url:
-        raise ValueError("MAKE_WEBHOOK_PUBLISH_POST missing in .env")
-    if not api_key:
-        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
 
     headers = {
         "Content-Type": "application/json",
         "x-make-apikey": api_key,
     }
-
-    dummy_payload = {
-        "isTest": True,
-    }
-
-    response = requests.post(url, json=dummy_payload, headers=headers, timeout=60)
-
-    # Make.com returns 200 even on logical failures, so check the body too
+    response = requests.post(url, json={"isTest": True}, headers=headers, timeout=60)
     response.raise_for_status()
     return f"Status: {response.status_code}\nBody: {response.text}"

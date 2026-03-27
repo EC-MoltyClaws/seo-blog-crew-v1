@@ -1,0 +1,47 @@
+name: Blog Topic Queue
+description: Add a new topic to the blog queue.
+title: "[Blog Topic]: "
+labels: ["blog-queue"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Blog Post Title
+      description: The exact title of the blog post.
+    validations:
+      required: true
+  - type: textarea
+    id: topic
+    attributes:
+      label: Topic
+      description: The subject of the blog post.
+    validations:
+      required: true
+  - type: input
+    id: category
+    attributes:
+      label: Category
+      description: The content category.
+    validations:
+      required: true
+  - type: input
+    id: target_audience
+    attributes:
+      label: Target Audience
+      description: Who the post is written for.
+    validations:
+      required: true
+  - type: input
+    id: shopify_hosted_image_link
+    attributes:
+      label: Shopify Hosted Image Link
+      description: The 383x383 product image URL.
+    validations:
+      required: true
+  - type: input
+    id: utm_product_url
+    attributes:
+      label: UTM Product URL
+      description: The UTM-tagged product link.
+    validations:
+      required: true
