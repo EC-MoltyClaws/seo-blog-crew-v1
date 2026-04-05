@@ -16,7 +16,7 @@ def check_publish_pipeline():
     today = datetime.now().strftime("%m/%d/%Y 9:00 AM")
 
     publisher = Agent(
-        llm=get_default_llm(verbose=False),
+        llm=get_default_llm(),
         role="Blog Publisher",
         goal="Fetch the latest topic and publish a test post using the data from that response.",
         backstory=(

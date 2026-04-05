@@ -7,7 +7,7 @@ def check_make_fetch_topic():
     from tools.make_webhook import test_fetch_topic_connection
 
     agent = Agent(
-        llm=get_default_llm(verbose=False),
+        llm=get_default_llm(),
         role="Connection Tester",
         goal="Test that the fetch topic webhook is reachable.",
         backstory="You are a connection tester. You call the assigned tool and report the result.",
@@ -33,7 +33,7 @@ def check_make_shopify_blog_posts():
     from tools.make_webhook import test_shopify_blog_posts_connection
 
     agent = Agent(
-        llm=get_default_llm(verbose=False),
+        llm=get_default_llm(),
         role="Connection Tester",
         goal="Test that the Shopify blog posts webhook is reachable.",
         backstory="You are a connection tester. You call the assigned tool and report the result.",
@@ -59,7 +59,7 @@ def check_make_publish_post():
     from tools.make_webhook import test_publish_post_connection
 
     agent = Agent(
-        llm=get_default_llm(verbose=False),
+        llm=get_default_llm(),
         role="Connection Tester",
         goal="Test that the publish post webhook is reachable.",
         backstory="You are a connection tester. You call the assigned tool and report the result.",

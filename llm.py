@@ -9,19 +9,17 @@ def _get_openai_api_key() -> str:
     return api_key
 
 
-def get_default_llm(verbose: bool = True) -> LLM:
+def get_default_llm() -> LLM:
     """GPT-4o — used by all agents."""
     return LLM(
         model="gpt-4o",
         api_key=_get_openai_api_key(),
-        verbose=verbose,
     )
 
 
-def get_pro_llm(verbose: bool = True) -> LLM:
+def get_pro_llm() -> LLM:
     """GPT-4o — used by agents that require higher content quality."""
     return LLM(
         model="gpt-4o",
         api_key=_get_openai_api_key(),
-        verbose=verbose,
     )
