@@ -139,6 +139,12 @@ def publish_blog_post(
 
     try:
         data = response.json()
+        
+        # Capture the blog-link from Make.com's response
+        published_url = data.get("blog-link", "")
+        if published_url:
+            print(f"Make.com reported successful publish at: {published_url}")
+            
     except json.JSONDecodeError as e:
         raise ValueError(f"Make.com returned non-JSON response: {e}\nBody: {response.text}")
         
@@ -153,7 +159,8 @@ def publish_blog_post(
             "handle": blogUrlHandle,
             "publish_date": blog_publish_date,
             "issue_number": blogID,
-            "shopify_tags": tags
+            "shopify_tags": tags,
+            "shopify_url": published_url
         }
         
         log_file = "published_posts.json"
@@ -170,8 +177,14 @@ def publish_blog_post(
 
         # Comment and close Issue
         issue_number = blogID
+        
+        # Build the completion comment
+        comment_body = f"🎉 **Published successfully!**\n\n**Title:** {blogTitle}\n**Date:** {blog_publish_date}"
+        if published_url:
+            comment_body += f"\n**Live Link:** {published_url}"
+
         comment_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/comments"
-        requests.post(comment_url, headers=gh_headers, json={"body": f"🎉 **Published successfully!**\n\n**Title:** {blogTitle}\n**Date:** {blog_publish_date}"}).raise_for_status()
+        requests.post(comment_url, headers=gh_headers, json={"body": comment_body}).raise_for_status()
         
         issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
         requests.patch(issue_url, headers=gh_headers, json={"state": "closed", "state_reason": "completed"}).raise_for_status()
