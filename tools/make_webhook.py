@@ -5,6 +5,17 @@ import requests
 from datetime import datetime
 from crewai.tools import tool
 
+REQUIRED_TOPIC_FIELDS = (
+    "title",
+    "topic",
+    "category",
+    "target_audience",
+    "shopify_hosted_image_link",
+    "utm_product_url",
+    "blogId",
+)
+
+
 def get_github_headers():
     token = os.getenv("GITHUB_TOKEN")
     if not token:
@@ -14,11 +25,70 @@ def get_github_headers():
         "Accept": "application/vnd.github.v3+json"
     }
 
+
 def get_repo():
     repo = os.getenv("GITHUB_REPOSITORY")
     if not repo:
         raise ValueError("GITHUB_REPOSITORY missing in .env (e.g., 'EC-MoltyClaws/seo-blog-crew-v1')")
     return repo
+
+
+def _extract_json_payload(body: str) -> dict:
+    candidates = []
+
+    fenced = re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", body, re.DOTALL | re.IGNORECASE)
+    candidates.extend(fenced)
+
+    heading_match = re.search(r"###\s*JSON Payload\s*(.*?)(?:\n###\s|\Z)", body, re.DOTALL | re.IGNORECASE)
+    if heading_match:
+        candidates.append(heading_match.group(1).strip())
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+
+    raise ValueError("Issue body does not contain a valid JSON payload.")
+
+
+def _extract_legacy_fields(body: str) -> dict:
+    fields = {}
+
+    def extract_field(header):
+        match = re.search(rf"### {re.escape(header)}\s*\n+(.*?)\s*(?:\n###|\Z)", body, re.DOTALL)
+        return match.group(1).strip() if match else ""
+
+    fields["title"] = extract_field("Blog Post Title")
+    fields["topic"] = extract_field("Topic")
+    fields["category"] = extract_field("Category")
+    fields["target_audience"] = extract_field("Target Audience")
+    fields["shopify_hosted_image_link"] = extract_field("Shopify Hosted Image Link")
+    fields["utm_product_url"] = extract_field("UTM Product URL")
+    return fields
+
+
+def parse_issue_body(body: str, issue_number: int | str | None = None) -> dict:
+    body = body or ""
+    fields = {}
+
+    try:
+        fields.update(_extract_json_payload(body))
+    except ValueError:
+        fields.update(_extract_legacy_fields(body))
+
+    fields["blogId"] = str(issue_number) if issue_number is not None else str(fields.get("blogId", ""))
+
+    normalized = {key: str(fields.get(key, "")).strip() for key in REQUIRED_TOPIC_FIELDS}
+    if not normalized["blogId"]:
+        normalized["blogId"] = str(issue_number or "")
+
+    return normalized
+
 
 @tool("Get Latest Unwritten Blog Topic")
 def get_latest_topic() -> str:
@@ -29,7 +99,7 @@ def get_latest_topic() -> str:
     """
     headers = get_github_headers()
     repo = get_repo()
-    
+
     url = f"https://api.github.com/repos/{repo}/issues"
     params = {
         "state": "open",
@@ -38,36 +108,21 @@ def get_latest_topic() -> str:
         "direction": "asc",
         "per_page": 1
     }
-    
+
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
     issues = response.json()
-    
+
     if not issues:
         raise ValueError("No open issues found with label 'blog-queue'.")
-    
-    issue = issues[0]
-    body = issue.get("body", "")
-    
-    fields = {}
-    
-    def extract_field(header):
-        match = re.search(rf"### {header}\s*\n+(.*?)\s*(?:\n###|\Z)", body, re.DOTALL)
-        return match.group(1).strip() if match else ""
 
-    fields["title"] = extract_field("Blog Post Title")
-    fields["topic"] = extract_field("Topic")
-    fields["category"] = extract_field("Category")
-    fields["target_audience"] = extract_field("Target Audience")
-    fields["shopify_hosted_image_link"] = extract_field("Shopify Hosted Image Link")
-    fields["utm_product_url"] = extract_field("UTM Product URL")
-    fields["blogId"] = str(issue["number"])
-    
-    # Validation
+    issue = issues[0]
+    fields = parse_issue_body(issue.get("body", ""), issue.get("number"))
+
     for k, v in fields.items():
         if not v:
             print(f"Warning: Extracted empty value for '{k}' from issue #{issue['number']}")
-            
+
     return json.dumps(fields, indent=2)
 
 @tool("Publish Blog Post to Shopify")
@@ -139,26 +194,26 @@ def publish_blog_post(
 
     try:
         data = response.json()
-        
+
         # Capture the blog-link from Make.com's response
         published_url = data.get("blog-link", "")
         if published_url:
             print(f"Make.com reported successful publish at: {published_url}")
-            
+
     except json.JSONDecodeError as e:
         raise ValueError(f"Make.com returned non-JSON response: {e}\nBody: {response.text}")
-        
+
     # --- PHASE 2: Update GitHub & Log ---
     try:
         gh_headers = get_github_headers()
         repo = get_repo()
-        
+
         # Log to JSON
         log_entry = {
             "title": blogTitle,
             "shopify_url": published_url
         }
-        
+
         log_file = "published_posts.json"
         log_data = []
         if os.path.exists(log_file):
@@ -173,7 +228,7 @@ def publish_blog_post(
 
         # Comment and close Issue
         issue_number = blogID
-        
+
         # Build the completion comment
         comment_body = f"🎉 **Published successfully!**\n\n**Title:** {blogTitle}\n**Date:** {blog_publish_date}"
         if published_url:
@@ -181,10 +236,10 @@ def publish_blog_post(
 
         comment_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/comments"
         requests.post(comment_url, headers=gh_headers, json={"body": comment_body}).raise_for_status()
-        
+
         issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
         requests.patch(issue_url, headers=gh_headers, json={"state": "closed", "state_reason": "completed"}).raise_for_status()
-        
+
     except Exception as e:
         print(f"Warning: Make.com succeeded, but GitHub/JSON update failed: {e}")
 

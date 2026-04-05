@@ -13,6 +13,7 @@ def check_imports():
     from tasks.publish_task import build_publish_task
     from tasks.research_task import build_research_task
     from tasks.write_task import build_write_task
+    from tools.make_webhook import parse_issue_body
 
 
 def check_agent_instantiation():
@@ -39,10 +40,12 @@ def check_task_instantiation():
     from tasks.publish_task import build_publish_task
     from tasks.research_task import build_research_task
     from tasks.write_task import build_write_task
+    from tools.make_webhook import parse_issue_body
 
     publisher = build_publisher_agent()
 
     build_fetch_topic_task(publisher)
+    parse_issue_body("", 1)
     build_research_task()
     build_write_task()
     build_evaluate_writing_task()
