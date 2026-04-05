@@ -3,8 +3,8 @@ import os
 
 def check_env_vars():
     required = [
-        "GEMINI_API_KEY",
-        "SERPER_API_KEY",
+        "OPENAI_API_KEY",
+        "TINYFISH_API_KEY",
         "MAKE_WEBHOOK_FETCH_TOPIC",
         "MAKE_WEBHOOK_API_KEY",
         "MAKE_WEBHOOK_PUBLISH_POST",

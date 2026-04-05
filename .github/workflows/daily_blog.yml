@@ -30,8 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TINYFISH_API_KEY: ${{ secrets.TINYFISH_API_KEY }}
           MAKE_WEBHOOK_FETCH_TOPIC: ${{ secrets.MAKE_WEBHOOK_FETCH_TOPIC }}
           MAKE_WEBHOOK_API_KEY: ${{ secrets.MAKE_WEBHOOK_API_KEY }}
           MAKE_WEBHOOK_PUBLISH_POST: ${{ secrets.MAKE_WEBHOOK_PUBLISH_POST }}

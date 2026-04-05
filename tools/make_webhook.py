@@ -156,10 +156,6 @@ def publish_blog_post(
         # Log to JSON
         log_entry = {
             "title": blogTitle,
-            "handle": blogUrlHandle,
-            "publish_date": blog_publish_date,
-            "issue_number": blogID,
-            "shopify_tags": tags,
             "shopify_url": published_url
         }
         
@@ -196,35 +192,31 @@ def publish_blog_post(
 
 @tool("Get Published Shopify Blog Posts")
 def get_shopify_blog_posts() -> str:
-    url = os.getenv("MAKE_WEBHOOK_FETCH_BLOG_POSTS")
-    api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
+    """
+    Reads published_posts.json and returns a list of published WanderPaws blog posts
+    with their titles and URLs for internal linking.
+    """
+    log_file = "published_posts.json"
+    if not os.path.exists(log_file):
+        return json.dumps([])
 
-    if not url:
-        raise ValueError("MAKE_WEBHOOK_FETCH_BLOG_POSTS missing in .env")
-    if not api_key:
-        raise ValueError("MAKE_WEBHOOK_API_KEY missing in .env")
+    with open(log_file, "r") as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            return json.dumps([])
 
-    headers = {
-        "Content-Type": "application/json",
-        "x-make-apikey": api_key,
-    }
-
-    response = requests.post(url, json={}, headers=headers, timeout=30)
-    response.raise_for_status()
-
-    try:
-        data = response.json()
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Make.com returned non-JSON response: {e}\nBody: {response.text}")
-
-    return json.dumps(data, indent=2)
+    posts = [{"title": p.get("title", ""), "url": p.get("shopify_url", "")} for p in data]
+    return json.dumps(posts, indent=2)
 
 @tool("Test Fetch Topic Webhook Connection")
 def test_fetch_topic_connection() -> str:
+    """Skipped — fetch topic now uses GitHub API directly."""
     return "Skipped. Now using GitHub API."
 
 @tool("Test Shopify Blog Posts Webhook Connection")
 def test_shopify_blog_posts_connection() -> str:
+    """Tests that the Shopify blog posts Make.com webhook is reachable."""
     url = os.getenv("MAKE_WEBHOOK_FETCH_BLOG_POSTS")
     api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
 
@@ -238,6 +230,7 @@ def test_shopify_blog_posts_connection() -> str:
 
 @tool("Test Publish Post Webhook Connection")
 def test_publish_post_connection() -> str:
+    """Tests that the publish post Make.com webhook is reachable."""
     url = os.getenv("MAKE_WEBHOOK_PUBLISH_POST")
     api_key = os.getenv("MAKE_WEBHOOK_API_KEY")
 

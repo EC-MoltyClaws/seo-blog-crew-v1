@@ -4,9 +4,9 @@ Run with: python test.py
 
 Checks:
   1. All required env vars are set
-  2. Gemini 2.5 Flash responds via a CrewAI agent (default LLM)
-  3. Gemini 2.5 Pro responds via a CrewAI agent (writer LLM)
-  4. Serper API responds (real call, one search)
+  2. GPT-4o responds via a CrewAI agent (default LLM)
+  3. GPT-4o responds via a CrewAI agent (writer LLM)
+  4. Tinyfish API responds (real call, one search)
   5. Make.com fetch topic webhook responds with valid JSON
   6. Make.com publish webhook accepts a dummy post via publisher agent
   7. Publish pipeline handoff: fetches real topic then publishes with dummy content
@@ -20,7 +20,7 @@ load_dotenv()
 
 from tests.env_checks import check_env_vars
 from tests.llm_checks import check_llm_flash, check_llm_pro
-from tests.serper_checks import check_serper_api
+from tests.serper_checks import check_tinyfish_api
 from tests.make_checks import check_make_fetch_topic, check_make_publish_post, check_make_shopify_blog_posts
 from tests.publish_pipeline_checks import check_publish_pipeline
 from tests.import_checks import check_imports, check_agent_instantiation, check_task_instantiation, check_flow_instantiation
@@ -45,9 +45,9 @@ if __name__ == "__main__":
 
     results = [
         # check("Env vars set",                      check_env_vars),
-        # check("Gemini 2.5 Flash reachable",        check_llm_flash),
-        # check("Gemini 2.5 Pro reachable",          check_llm_pro),
-        # check("Serper API reachable",              check_serper_api),
+        # check("GPT-4o reachable (default LLM)",     check_llm_flash),
+        # check("GPT-4o reachable (writer LLM)",     check_llm_pro),
+        # check("Tinyfish API reachable",             check_tinyfish_api),
         # check("Make.com fetch topic reachable",         check_make_fetch_topic),
         check("Make.com Shopify blog posts reachable",  check_make_shopify_blog_posts),
         # check("Make.com publish post reachable",         check_make_publish_post),

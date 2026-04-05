@@ -26,12 +26,12 @@ def _run_llm_ping(llm) -> None:
 
 
 def check_llm_flash():
-    """Gemini 2.5 Flash — default LLM used by all agents except the writer."""
+    """GPT-4o — default LLM used by all agents."""
     from llm import get_default_llm
     _run_llm_ping(get_default_llm(verbose=False))
 
 
 def check_llm_pro():
-    """Gemini 2.5 Pro — higher-quality content generation."""
+    """GPT-4o — higher-quality content generation."""
     from llm import get_pro_llm
     _run_llm_ping(get_pro_llm(verbose=False))
