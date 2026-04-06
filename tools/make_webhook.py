@@ -208,10 +208,21 @@ def publish_blog_post(
         gh_headers = get_github_headers()
         repo = get_repo()
 
+        # Re-fetch issue metadata so the publish log keeps the queue context.
+        issue_number = blogID
+        issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+        issue_response = requests.get(issue_url, headers=gh_headers)
+        issue_response.raise_for_status()
+        issue = issue_response.json()
+        issue_fields = parse_issue_body(issue.get("body", ""), issue_number)
+
         # Log to JSON
         log_entry = {
             "title": blogTitle,
-            "shopify_url": published_url
+            "shopify_url": published_url,
+            "topic": issue_fields.get("topic", ""),
+            "category": issue_fields.get("category", ""),
+            "target_audience": issue_fields.get("target_audience", "")
         }
 
         log_file = "published_posts.json"
